@@ -4,6 +4,9 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
 
+    "rootDir": "./src",
+    "outDir": "./dist",
+
     "strict": true,
 
     "esModuleInterop": true,
@@ -17,6 +20,8 @@
 
     "forceConsistentCasingInFileNames": true
   },
+
   "include": ["src"],
+
   "exclude": ["node_modules", "dist", "prisma"]
 }
