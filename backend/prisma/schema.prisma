@@ -1,0 +1,220 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SalaryType {
+  FIXED
+  VARIABLE
+}
+
+enum GoalPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum GoalStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum ExpenseCategory {
+  FOOD
+  TRANSPORT
+  SHOPPING
+  BILLS
+  HEALTH
+  EDUCATION
+  ENTERTAINMENT
+  TRAVEL
+  SUBSCRIPTION
+  INVESTMENT
+  OTHER
+}
+
+enum RecurringType {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAW
+}
+
+model User {
+  id       String @id @default(cuid())
+  fullName String
+  email    String @unique
+  password String
+  pinHash  String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile       UserProfile?
+  expenses      Expense[]
+  goals         Goal[]
+  salaries      SalaryHistory[]
+  savings       SavingsTransaction[]
+  reviews       MonthlyReview[]
+  notifications Notification[]
+
+  @@index([email])
+}
+
+model UserProfile {
+  id String @id @default(cuid())
+
+  userId String @unique
+
+  salaryType SalaryType
+
+  monthlySalary Float
+
+  monthlyBudget Float
+
+  monthlySavingsTarget Float
+
+  onboardingCompleted Boolean @default(false)
+
+  currency String @default("INR")
+
+  salaryCreditDay Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Goal {
+  id String @id @default(cuid())
+
+  userId String
+
+  title String
+
+  targetAmount Float
+
+  savedAmount Float @default(0)
+
+  priority GoalPriority
+
+  status GoalStatus @default(ACTIVE)
+
+  deadline DateTime?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Expense {
+  id String @id @default(cuid())
+
+  userId String
+
+  title String
+
+  amount Float
+
+  category ExpenseCategory
+
+  customCategory String?
+
+  expenseDate DateTime
+
+  notes String?
+
+  isRecurring Boolean @default(false)
+
+  recurringType RecurringType?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expenseDate])
+}
+
+model SalaryHistory {
+  id String @id @default(cuid())
+
+  userId String
+
+  amount Float
+
+  receivedDate DateTime
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model SavingsTransaction {
+  id String @id @default(cuid())
+
+  userId String
+
+  amount Float
+
+  type TransactionType
+
+  reason String?
+
+  transactionDate DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model MonthlyReview {
+  id String @id @default(cuid())
+
+  userId String
+
+  month Int
+  year Int
+
+  financialScore Int
+
+  aiSummary String
+  suggestions Json?
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+}
+
+model Notification {
+  id String @id @default(cuid())
+
+  userId String
+
+  title String
+
+  message String
+
+  isRead Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
